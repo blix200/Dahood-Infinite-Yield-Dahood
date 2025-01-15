@@ -1,0 +1,102 @@
+local CommandLibrary = {}
+
+function CommandLibrary:CreateGUI()
+    -- GUI Elements
+    local ScreenGui = Instance.new("ScreenGui")
+    local Frame = Instance.new("Frame")
+    local CommandList = Instance.new("ScrollingFrame")
+    local SearchButton = Instance.new("TextButton")
+    local CommandTemplate = Instance.new("TextButton")
+    local CloseButton = Instance.new("TextButton")
+    local SearchBox = Instance.new("TextBox")
+
+    -- Parent GUI to Player's screen
+    ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    ScreenGui.Name = "CommandGUI"
+
+    -- Frame setup
+    Frame.Parent = ScreenGui
+    Frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+    Frame.Size = UDim2.new(0, 300, 0, 400)
+    Frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+    Frame.Draggable = true
+    Frame.Active = true
+    Frame.BorderSizePixel = 0
+
+    -- Scrollable CommandList
+    CommandList.Parent = Frame
+    CommandList.Size = UDim2.new(1, -10, 1, -40)
+    CommandList.Position = UDim2.new(0, 5, 0, 5)
+    CommandList.CanvasSize = UDim2.new(0, 0, 1, 0)
+    CommandList.ScrollBarThickness = 6
+    CommandList.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    CommandList.BorderSizePixel = 0
+
+    -- SearchButton setup
+    SearchButton.Parent = Frame
+    SearchButton.Size = UDim2.new(0, 30, 0, 30)
+    SearchButton.Position = UDim2.new(0, 5, 1, -35)
+    SearchButton.Text = "&"
+    SearchButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+    SearchButton.BorderSizePixel = 0
+
+    -- CloseButton setup
+    CloseButton.Parent = Frame
+    CloseButton.Size = UDim2.new(0, 30, 0, 30)
+    CloseButton.Position = UDim2.new(1, -35, 0, 5)
+    CloseButton.Text = "X"
+    CloseButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+    CloseButton.BorderSizePixel = 0
+
+    -- SearchBox setup
+    SearchBox.Parent = Frame
+    SearchBox.Size = UDim2.new(0, 250, 0, 30)
+    SearchBox.Position = UDim2.new(0, 40, 1, -35)
+    SearchBox.Visible = false
+    SearchBox.PlaceholderText = "Search Commands"
+    SearchBox.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    SearchBox.BorderSizePixel = 0
+    SearchBox.TextColor3 = Color3.new(1, 1, 1)
+
+    -- CommandTemplate setup
+    CommandTemplate.Size = UDim2.new(1, -10, 0, 30)
+    CommandTemplate.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+    CommandTemplate.BorderSizePixel = 0
+    CommandTemplate.TextColor3 = Color3.new(1, 1, 1)
+    CommandTemplate.Visible = false
+
+    -- Close GUI
+    CloseButton.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
+    -- Search Feature
+    SearchButton.MouseButton1Click:Connect(function()
+        SearchBox.Visible = not SearchBox.Visible
+        if SearchBox.Visible then
+            SearchBox:CaptureFocus()
+        else
+            SearchBox:ReleaseFocus()
+        end
+    end)
+
+    SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+        for _, command in ipairs(CommandList:GetChildren()) do
+            if command:IsA("TextButton") then
+                command.Visible = string.find(string.lower(command.Text), string.lower(SearchBox.Text)) ~= nil
+            end
+        end
+    end)
+
+    return {
+        AddCommand = function(name, func)
+            local Command = CommandTemplate:Clone()
+            Command.Visible = true
+            Command.Text = name
+            Command.Parent = CommandList
+            Command.MouseButton1Click:Connect(func)
+        end,
+    }
+end
+
+return CommandLibrary
